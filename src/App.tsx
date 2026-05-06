@@ -123,6 +123,11 @@ function CredentialBadges({ guide, theme, compact }: { guide: Guide; theme: Them
 }
 
 export default function App() {
+  const [authed, setAuthed] = useState(() => sessionStorage.getItem('hf_auth') === '1');
+  const [pw, setPw] = useState('');
+  const [pwError, setPwError] = useState('');
+  const [pwLoading, setPwLoading] = useState(false);
+
   const [mode, setMode] = useState<'fish' | 'hunt'>('fish');
   const [tab, setTab] = useState('explore');
   const [sub, setSub] = useState('all');
@@ -143,6 +148,29 @@ export default function App() {
   const [speciesSearch, setSpeciesSearch] = useState('');
   const [chatOpen, setChatOpen] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(4);
+
+  const handleLogin = async () => {
+    setPwLoading(true);
+    setPwError('');
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        sessionStorage.setItem('hf_auth', '1');
+        setAuthed(true);
+      } else {
+        setPwError('Incorrect password');
+      }
+    } catch {
+      setPwError('Connection error');
+    } finally {
+      setPwLoading(false);
+    }
+  };
 
   useEffect(() => { setTimeout(() => setLoaded(true), 100); }, []);
   useEffect(() => {
@@ -242,6 +270,44 @@ export default function App() {
   ));
 
   const expLabel = EXP_LEVELS.find(e => e.val === expLevel)?.label || 'Any Level';
+
+  if (!authed) {
+    return (
+      <div style={{fontFamily:sans,minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg, #042f3a 0%, #0e6174 40%, #06b6d4 100%)'}}>
+        <div style={{backgroundColor:'#fff',borderRadius:20,padding:'48px 40px',maxWidth:380,width:'100%',boxShadow:'0 20px 60px rgba(0,0,0,0.3)',textAlign:'center'}}>
+          <div style={{fontSize:32,marginBottom:4}}>🎣🦌</div>
+          <h1 style={{fontFamily:serif,fontSize:26,fontWeight:700,color:'#1a1a17',margin:'0 0 6px'}}>HuntFish</h1>
+          <p style={{fontSize:14,color:'#6b7280',margin:'0 0 28px'}}>Enter password to continue</p>
+          <input
+            type="password"
+            value={pw}
+            onChange={e => { setPw(e.target.value); setPwError(''); }}
+            onKeyDown={e => e.key === 'Enter' && pw.trim() && handleLogin()}
+            placeholder="Password"
+            autoFocus
+            style={{
+              width:'100%',padding:'14px 16px',fontSize:15,fontFamily:sans,
+              border:'1px solid #d1d5db',borderRadius:12,outline:'none',
+              backgroundColor:'#f9fafb',marginBottom:12,
+            }}
+          />
+          {pwError && <p style={{fontSize:13,color:'#dc2626',margin:'0 0 12px'}}>{pwError}</p>}
+          <button
+            onClick={handleLogin}
+            disabled={!pw.trim() || pwLoading}
+            style={{
+              width:'100%',padding:'14px',fontSize:15,fontWeight:700,fontFamily:sans,
+              backgroundColor:'#0891b2',color:'#fff',border:'none',borderRadius:12,
+              cursor: pw.trim() && !pwLoading ? 'pointer' : 'default',
+              opacity: pw.trim() && !pwLoading ? 1 : 0.5,
+            }}
+          >
+            {pwLoading ? 'Checking...' : 'Enter'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{fontFamily:sans,backgroundColor:theme.bg,minHeight:'100vh',transition:'background-color 0.6s ease',color:'#1a1a17'}} onClick={()=>activePanel&&setActivePanel(null)}>
