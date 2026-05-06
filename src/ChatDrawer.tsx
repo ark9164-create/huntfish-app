@@ -25,6 +25,16 @@ export default function ChatDrawer({ open, onClose, theme, mode }: ChatDrawerPro
   const sans = "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif";
   const serif = "'Playfair Display', Georgia, serif";
 
+  const renderText = (text: string) => {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i}>{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+  };
+
   useEffect(() => {
     if (open && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 300);
@@ -190,7 +200,7 @@ export default function ChatDrawer({ open, onClose, theme, mode }: ChatDrawerPro
                   fontSize: 13, lineHeight: 1.6, margin: 0, fontFamily: sans,
                   whiteSpace: 'pre-wrap', wordBreak: 'break-word',
                 }}>
-                  {msg.content}
+                  {renderText(msg.content)}
                   {streaming && i === messages.length - 1 && msg.role === 'assistant' && (
                     <span style={{
                       display: 'inline-block', width: 6, height: 14,
