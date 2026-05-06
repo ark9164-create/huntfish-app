@@ -368,9 +368,9 @@ export default function App() {
                   <button onClick={(e)=>{e.stopPropagation();goCalPrev();}} style={{width:30,height:30,borderRadius:'50%',border:'1px solid #e5e7eb',backgroundColor:canGoPrev?'#fff':'#f9fafb',cursor:canGoPrev?'pointer':'default',display:'flex',alignItems:'center',justifyContent:'center',opacity:canGoPrev?1:0.3,flexShrink:0}}>
                     <ChevronLeft size={14} color="#374151"/>
                   </button>
-                  <div style={{display:'flex',gap:40,justifyContent:'center',flex:1}}>
-                    <span style={{fontSize:14,fontWeight:700,color:'#1a1a17',fontFamily:serif,textAlign:'center'}}>{MONTH_NAMES[calMonth.month]} {calMonth.year}</span>
-                    <span style={{fontSize:14,fontWeight:700,color:'#1a1a17',fontFamily:serif,textAlign:'center'}}>{MONTH_NAMES[calNext.month]} {calNext.year}</span>
+                  <div style={{display:'flex',gap:16,justifyContent:'center',flex:1}}>
+                    <span style={{flex:'1 1 0',fontSize:14,fontWeight:700,color:'#1a1a17',fontFamily:serif,textAlign:'center'}}>{MONTH_NAMES[calMonth.month]} {calMonth.year}</span>
+                    <span style={{flex:'1 1 0',fontSize:14,fontWeight:700,color:'#1a1a17',fontFamily:serif,textAlign:'center'}}>{MONTH_NAMES[calNext.month]} {calNext.year}</span>
                   </div>
                   <button onClick={(e)=>{e.stopPropagation();goCalNext();}} style={{width:30,height:30,borderRadius:'50%',border:'1px solid #e5e7eb',backgroundColor:'#fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                     <ChevronRight size={14} color="#374151"/>
