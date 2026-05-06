@@ -26,8 +26,8 @@ function MiniCalendar({ guide, month, year, theme, compact }: { guide: Guide; mo
   }
 
   const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const sz = compact ? 18 : 26;
-  const font = compact ? 8 : 11;
+  const sz = compact ? 18 : 22;
+  const font = compact ? 8 : 10;
 
   return (
     <div>
@@ -36,7 +36,7 @@ function MiniCalendar({ guide, month, year, theme, compact }: { guide: Guide; mo
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: compact ? 1 : 2 }}>
         {['S','M','T','W','T','F','S'].map((d, i) => (
-          <div key={i} style={{ width: sz, height: compact ? 12 : 16, fontSize: compact ? 7 : 9, color: '#9ca3af', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{d}</div>
+          <div key={i} style={{ width: sz, height: compact ? 12 : 14, fontSize: compact ? 7 : 9, color: '#9ca3af', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{d}</div>
         ))}
         {cells.map((d, i) => (
           <div
@@ -140,6 +140,10 @@ export default function App() {
   const [calendarMonth, setCalendarMonth] = useState(4); // May = 4 (0-indexed)
 
   useEffect(() => { setTimeout(() => setLoaded(true), 100); }, []);
+  useEffect(() => {
+    document.body.style.overflow = selectedGuide ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [selectedGuide]);
 
   const theme = mode === 'fish' ? FISH_THEME : HUNT_THEME;
   const fishSubs: [string,string][] = [['all','All'],['fly','Fly Fishing'],['deep-sea','Deep Sea'],['spin','Spin']];
@@ -604,7 +608,7 @@ export default function App() {
                     <button onClick={()=>setCalendarMonth(m=>Math.min(11,m+1))} style={{width:24,height:24,borderRadius:6,border:'1px solid #e5e7eb',backgroundColor:'#fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,color:'#6b7280'}}>›</button>
                   </div>
                 </div>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12,backgroundColor:'#f9fafb',borderRadius:12,padding:14}}>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,backgroundColor:'#f9fafb',borderRadius:12,padding:12}}>
                   <MiniCalendar guide={selectedGuide} month={calendarMonth} year={2026} theme={theme} />
                   <MiniCalendar guide={selectedGuide} month={(calendarMonth + 1) % 12} year={calendarMonth + 1 > 11 ? 2027 : 2026} theme={theme} />
                   <MiniCalendar guide={selectedGuide} month={(calendarMonth + 2) % 12} year={calendarMonth + 2 > 11 ? 2027 : 2026} theme={theme} />
