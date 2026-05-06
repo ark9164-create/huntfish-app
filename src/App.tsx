@@ -13,7 +13,7 @@ const sans = "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif";
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAY_ABBR = ['Su','Mo','Tu','We','Th','Fr','Sa'];
 
-function MiniCalendar({ guide, month, year, theme, compact, selectedDate, onSelectDate }: { guide: Guide; month: number; year: number; theme: Theme; compact?: boolean; selectedDate?: string | null; onSelectDate?: (d: string) => void }) {
+function MiniCalendar({ guide, month, year, theme, compact, dateStart, dateEnd, onSelectDate }: { guide: Guide; month: number; year: number; theme: Theme; compact?: boolean; dateStart?: string | null; dateEnd?: string | null; onSelectDate?: (d: string) => void }) {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   const startPad = firstDay.getDay();
@@ -31,6 +31,14 @@ function MiniCalendar({ guide, month, year, theme, compact, selectedDate, onSele
   const sz = compact ? 18 : 22;
   const font = compact ? 8 : 10;
 
+  const inRange = (ds: string) => {
+    if (!dateStart) return false;
+    if (!dateEnd) return ds === dateStart;
+    return ds >= (dateStart < dateEnd ? dateStart : dateEnd) && ds <= (dateStart < dateEnd ? dateEnd : dateStart);
+  };
+  const isStart = (ds: string) => ds === dateStart;
+  const isEnd = (ds: string) => ds === dateEnd;
+
   return (
     <div>
       <div style={{ fontSize: compact ? 10 : 12, fontWeight: 700, color: '#6b7280', marginBottom: compact ? 4 : 8, textAlign: 'center' }}>
@@ -41,7 +49,8 @@ function MiniCalendar({ guide, month, year, theme, compact, selectedDate, onSele
           <div key={i} style={{ width: sz, height: compact ? 12 : 14, fontSize: compact ? 7 : 9, color: '#9ca3af', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{d}</div>
         ))}
         {cells.map((d, i) => {
-          const isSel = d?.avail && selectedDate === d.dateStr;
+          const sel = d?.avail && inRange(d.dateStr);
+          const endpoint = d?.avail && (isStart(d.dateStr) || isEnd(d.dateStr));
           return (
           <div
             key={i}
@@ -51,9 +60,9 @@ function MiniCalendar({ guide, month, year, theme, compact, selectedDate, onSele
               width: sz, height: sz, borderRadius: compact ? 3 : 4,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: font, fontWeight: d?.avail ? 700 : 400,
-              backgroundColor: isSel ? theme.accent : d?.avail ? theme.accent + '20' : 'transparent',
-              color: isSel ? '#fff' : d?.avail ? theme.accentDark : d ? '#c1c1b8' : 'transparent',
-              border: isSel ? `1.5px solid ${theme.accent}` : d?.avail ? `1.5px solid ${theme.accent}55` : '1px solid transparent',
+              backgroundColor: endpoint ? theme.accent : sel ? theme.accent + '40' : d?.avail ? theme.accent + '20' : 'transparent',
+              color: endpoint ? '#fff' : sel ? theme.accentDark : d?.avail ? theme.accentDark : d ? '#c1c1b8' : 'transparent',
+              border: endpoint ? `1.5px solid ${theme.accent}` : sel ? `1.5px solid ${theme.accent}88` : d?.avail ? `1.5px solid ${theme.accent}55` : '1px solid transparent',
               cursor: d?.avail ? 'pointer' : 'default',
               transition: 'background-color 0.15s ease',
             }}
@@ -152,7 +161,13 @@ export default function App() {
   const [speciesSearch, setSpeciesSearch] = useState('');
   const [chatOpen, setChatOpen] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(4);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [dateStart, setDateStart] = useState<string | null>(null);
+  const [dateEnd, setDateEnd] = useState<string | null>(null);
+  const handleBookingDateClick = (d: string) => {
+    if (!dateStart || dateEnd) { setDateStart(d); setDateEnd(null); }
+    else { setDateEnd(d); }
+  };
+  const hasDate = !!(dateStart && dateEnd);
 
   const handleLogin = async () => {
     setPwLoading(true);
@@ -732,7 +747,7 @@ export default function App() {
 
       {/* GUIDE DETAIL MODAL */}
       {selectedGuide && (
-        <div onClick={()=>{setSelectedGuide(null);setBookingMsg(false);setCalendarMonth(4);setSelectedDate(null);}} style={{position:'fixed',inset:0,backgroundColor:'rgba(0,0,0,0.6)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',padding:20,backdropFilter:'blur(4px)'}}>
+        <div onClick={()=>{setSelectedGuide(null);setBookingMsg(false);setCalendarMonth(4);setDateStart(null);setDateEnd(null);}} style={{position:'fixed',inset:0,backgroundColor:'rgba(0,0,0,0.6)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',padding:20,backdropFilter:'blur(4px)'}}>
           <div onClick={e=>e.stopPropagation()} className="scale-in" style={{backgroundColor:'#fff',borderRadius:20,maxWidth:580,width:'100%',maxHeight:'90vh',overflowY:'auto',position:'relative'}}>
             <div style={{height:190,background:`linear-gradient(135deg, ${selectedGuide.catches[0]?.g[0]||'#333'}, ${selectedGuide.catches[0]?.g[1]||'#999'})`,borderRadius:'20px 20px 0 0',padding:20,display:'flex',flexDirection:'column',justifyContent:'space-between',position:'relative'}}>
               <div style={{display:'flex',justifyContent:'space-between'}}>
@@ -741,7 +756,7 @@ export default function App() {
                     <span key={s} style={{backgroundColor:'rgba(255,255,255,0.2)',color:'#fff',padding:'4px 12px',borderRadius:12,fontSize:11,fontWeight:600,textTransform:'uppercase',backdropFilter:'blur(8px)'}}>{s}</span>
                   ))}
                 </div>
-                <button onClick={()=>{setSelectedGuide(null);setBookingMsg(false);setCalendarMonth(4);setSelectedDate(null);}} style={{width:34,height:34,borderRadius:'50%',backgroundColor:'rgba(0,0,0,0.3)',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                <button onClick={()=>{setSelectedGuide(null);setBookingMsg(false);setCalendarMonth(4);setDateStart(null);setDateEnd(null);}} style={{width:34,height:34,borderRadius:'50%',backgroundColor:'rgba(0,0,0,0.3)',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
                   <X size={16} color="#fff"/>
                 </button>
               </div>
@@ -820,9 +835,9 @@ export default function App() {
                   </div>
                 </div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,backgroundColor:'#f9fafb',borderRadius:12,padding:12}}>
-                  <MiniCalendar guide={selectedGuide} month={calendarMonth} year={2026} theme={theme} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
-                  <MiniCalendar guide={selectedGuide} month={(calendarMonth + 1) % 12} year={calendarMonth + 1 > 11 ? 2027 : 2026} theme={theme} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
-                  <MiniCalendar guide={selectedGuide} month={(calendarMonth + 2) % 12} year={calendarMonth + 2 > 11 ? 2027 : 2026} theme={theme} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+                  <MiniCalendar guide={selectedGuide} month={calendarMonth} year={2026} theme={theme} dateStart={dateStart} dateEnd={dateEnd} onSelectDate={handleBookingDateClick} />
+                  <MiniCalendar guide={selectedGuide} month={(calendarMonth + 1) % 12} year={calendarMonth + 1 > 11 ? 2027 : 2026} theme={theme} dateStart={dateStart} dateEnd={dateEnd} onSelectDate={handleBookingDateClick} />
+                  <MiniCalendar guide={selectedGuide} month={(calendarMonth + 2) % 12} year={calendarMonth + 2 > 11 ? 2027 : 2026} theme={theme} dateStart={dateStart} dateEnd={dateEnd} onSelectDate={handleBookingDateClick} />
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:12,marginTop:8,fontSize:10,color:'#9ca3af'}}>
                   <span style={{display:'flex',alignItems:'center',gap:4}}><span style={{width:10,height:10,borderRadius:2,backgroundColor:theme.accent+'20',border:`1.5px solid ${theme.accent}55`}}/> Available</span>
@@ -866,19 +881,25 @@ export default function App() {
                 ))}
               </div>
 
+              {dateStart && !dateEnd && (
+                <div style={{backgroundColor:'#fefce8',border:'1px solid #fde68a',borderRadius:10,padding:'8px 14px',marginBottom:10,fontSize:12,color:'#92400e',textAlign:'center',fontWeight:600}}>
+                  Click an end date to complete your range
+                </div>
+              )}
+
               {bookingMsg ? (
                 <div style={{backgroundColor:'#f0fdf4',border:'2px solid #86efac',borderRadius:14,padding:18,textAlign:'center'}}>
                   <div style={{width:44,height:44,borderRadius:'50%',backgroundColor:'#16a34a',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 10px'}}>
                     <Check size={22} color="#fff"/>
                   </div>
                   <h3 style={{fontFamily:serif,fontSize:18,fontWeight:700,margin:'0 0 4px',color:'#166534'}}>Booking Request Sent!</h3>
-                  <p style={{fontSize:12,color:'#4b5563',margin:0}}>{selectedGuide.name} will confirm within 24 hours for {(() => { const d = new Date(selectedDate + 'T00:00:00'); const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return `${m[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`; })()}.</p>
+                  <p style={{fontSize:12,color:'#4b5563',margin:0}}>{selectedGuide.name} will confirm within 24 hours for {(() => { const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; const s = new Date((dateStart! < dateEnd! ? dateStart! : dateEnd!) + 'T00:00:00'); const e = new Date((dateStart! < dateEnd! ? dateEnd! : dateStart!) + 'T00:00:00'); return `${m[s.getMonth()]} ${s.getDate()} – ${m[e.getMonth()]} ${e.getDate()}, ${e.getFullYear()}`; })()}.</p>
                 </div>
               ) : (
                 <button
-                  onClick={()=>{ if (selectedDate) setBookingMsg(true); }}
-                  style={{width:'100%',padding:'15px 20px',borderRadius:14,border:'none',background: selectedDate ? theme.hero : '#d1d5db',color:'#fff',cursor: selectedDate ? 'pointer' : 'not-allowed',fontSize:15,fontWeight:700,fontFamily:sans,letterSpacing:'0.3px',boxShadow: selectedDate ? '0 4px 16px rgba(0,0,0,0.2)' : 'none',transition:'all 0.5s ease',opacity: selectedDate ? 1 : 0.7}}>
-                  {selectedDate ? (() => { const d = new Date(selectedDate + 'T00:00:00'); const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return `Request Booking · ${m[d.getMonth()]} ${d.getDate()} — ${selectedGuide.price}`; })() : 'Select a date above to book'}
+                  onClick={()=>{ if (hasDate) setBookingMsg(true); }}
+                  style={{width:'100%',padding:'15px 20px',borderRadius:14,border:'none',background: hasDate ? theme.hero : '#d1d5db',color:'#fff',cursor: hasDate ? 'pointer' : 'not-allowed',fontSize:15,fontWeight:700,fontFamily:sans,letterSpacing:'0.3px',boxShadow: hasDate ? '0 4px 16px rgba(0,0,0,0.2)' : 'none',transition:'all 0.5s ease',opacity: hasDate ? 1 : 0.7}}>
+                  {hasDate ? (() => { const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; const s = new Date((dateStart! < dateEnd! ? dateStart! : dateEnd!) + 'T00:00:00'); const e = new Date((dateStart! < dateEnd! ? dateEnd! : dateStart!) + 'T00:00:00'); return `Request Booking · ${m[s.getMonth()]} ${s.getDate()} – ${m[e.getMonth()]} ${e.getDate()} — ${selectedGuide.price}`; })() : dateStart ? 'Select end date' : 'Select dates above to book'}
                 </button>
               )}
             </div>
