@@ -204,7 +204,20 @@ export default function App() {
     if (g.type !== mode) return false;
     if (sub !== 'all' && !g.sub.includes(sub)) return false;
     if (where !== 'Anywhere' && !g.loc.toLowerCase().includes(where.toLowerCase().split(',')[0].toLowerCase().trim().substring(0,4))) return false;
-    if (rangeStart) { const seasons = getRangeSeasons(rangeStart, rangeEnd||rangeStart); if (!g.seasons.some(s => seasons.has(s))) return false; }
+    if (rangeStart) {
+      const checkEnd = rangeEnd || rangeStart;
+      const cur = new Date(rangeStart); cur.setHours(0,0,0,0);
+      const end = new Date(checkEnd); end.setHours(0,0,0,0);
+      let allCovered = true;
+      while (cur <= end) {
+        const ds = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
+        let ok = false;
+        for (const w of g.availability) { if (ds >= w.startDate && ds <= w.endDate) { ok = true; break; } }
+        if (!ok) { allCovered = false; break; }
+        cur.setDate(cur.getDate()+1);
+      }
+      if (!allCovered) return false;
+    }
     if (expLevel !== 'all' && !g.levels.includes(expLevel)) return false;
     if (speciesSearch && !g.species.some(s => s.toLowerCase().includes(speciesSearch.toLowerCase())) && !g.loc.toLowerCase().includes(speciesSearch.toLowerCase()) && !g.name.toLowerCase().includes(speciesSearch.toLowerCase())) return false;
     return true;
