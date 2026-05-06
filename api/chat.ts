@@ -66,7 +66,7 @@ export default async function handler(req: Request): Promise<Response> {
         ],
         stream: true,
         max_tokens: 400,
-        temperature: 0.5,
+        temperature: 0.3,
       }),
     });
 
