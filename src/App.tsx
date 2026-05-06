@@ -342,40 +342,40 @@ export default function App() {
               </div>
             )}
             {activePanel === 'when' && (
-              <div onClick={e=>e.stopPropagation()} className="slide-down" style={{position:'absolute',top:'100%',left:'50%',transform:'translateX(-50%)',width:660,marginTop:8,backgroundColor:'#fff',borderRadius:16,boxShadow:'0 12px 48px rgba(0,0,0,0.15)',padding:'24px 28px',zIndex:50}}>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+              <div onClick={e=>e.stopPropagation()} className="slide-down" style={{position:'absolute',top:'100%',left:0,right:0,marginTop:8,backgroundColor:'#fff',borderRadius:16,boxShadow:'0 12px 48px rgba(0,0,0,0.15)',padding:'20px 16px',zIndex:50}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
                   <p style={{fontSize:12,fontWeight:700,color:'#9ca3af',textTransform:'uppercase',letterSpacing:'1px',margin:0}}>Select your dates</p>
                   {rangeStart && (
-                    <button onClick={()=>{setRangeStart(null);setRangeEnd(null);setHoverDate(null);}} style={{padding:'5px 14px',borderRadius:8,border:'1px solid #e5e7eb',backgroundColor:'#f9fafb',cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:sans,color:'#6b7280',display:'flex',alignItems:'center',gap:5}}>
+                    <button onClick={(e)=>{e.stopPropagation();setRangeStart(null);setRangeEnd(null);setHoverDate(null);}} style={{padding:'5px 14px',borderRadius:8,border:'1px solid #e5e7eb',backgroundColor:'#f9fafb',cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:sans,color:'#6b7280',display:'flex',alignItems:'center',gap:5}}>
                       <X size={12}/> Clear dates
                     </button>
                   )}
                 </div>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-                  <button onClick={goCalPrev} style={{width:32,height:32,borderRadius:'50%',border:'1px solid #e5e7eb',backgroundColor:canGoPrev?'#fff':'#f9fafb',cursor:canGoPrev?'pointer':'default',display:'flex',alignItems:'center',justifyContent:'center',opacity:canGoPrev?1:0.3}}>
-                    <ChevronLeft size={16} color="#374151"/>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+                  <button onClick={(e)=>{e.stopPropagation();goCalPrev();}} style={{width:30,height:30,borderRadius:'50%',border:'1px solid #e5e7eb',backgroundColor:canGoPrev?'#fff':'#f9fafb',cursor:canGoPrev?'pointer':'default',display:'flex',alignItems:'center',justifyContent:'center',opacity:canGoPrev?1:0.3,flexShrink:0}}>
+                    <ChevronLeft size={14} color="#374151"/>
                   </button>
-                  <div style={{display:'flex',gap:80,justifyContent:'center',flex:1}}>
-                    <span style={{fontSize:15,fontWeight:700,color:'#1a1a17',fontFamily:serif,minWidth:140,textAlign:'center'}}>{MONTH_NAMES[calMonth.month]} {calMonth.year}</span>
-                    <span style={{fontSize:15,fontWeight:700,color:'#1a1a17',fontFamily:serif,minWidth:140,textAlign:'center'}}>{MONTH_NAMES[calNext.month]} {calNext.year}</span>
+                  <div style={{display:'flex',gap:40,justifyContent:'center',flex:1}}>
+                    <span style={{fontSize:14,fontWeight:700,color:'#1a1a17',fontFamily:serif,textAlign:'center'}}>{MONTH_NAMES[calMonth.month]} {calMonth.year}</span>
+                    <span style={{fontSize:14,fontWeight:700,color:'#1a1a17',fontFamily:serif,textAlign:'center'}}>{MONTH_NAMES[calNext.month]} {calNext.year}</span>
                   </div>
-                  <button onClick={goCalNext} style={{width:32,height:32,borderRadius:'50%',border:'1px solid #e5e7eb',backgroundColor:'#fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    <ChevronRight size={16} color="#374151"/>
+                  <button onClick={(e)=>{e.stopPropagation();goCalNext();}} style={{width:30,height:30,borderRadius:'50%',border:'1px solid #e5e7eb',backgroundColor:'#fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    <ChevronRight size={14} color="#374151"/>
                   </button>
                 </div>
-                <div style={{display:'flex',gap:32,justifyContent:'center'}}>
+                <div style={{display:'flex',gap:16,justifyContent:'center'}}>
                   {[calMonth, calNext].map((cm, mi) => {
                     const cells = buildMonthCells(cm.year, cm.month);
                     return (
-                      <div key={mi} style={{flex:'0 0 280px'}}>
-                        <div style={{display:'grid',gridTemplateColumns:'repeat(7, 1fr)',marginBottom:6}}>
+                      <div key={mi} style={{flex:'1 1 0',minWidth:0,maxWidth:290}}>
+                        <div style={{display:'grid',gridTemplateColumns:'repeat(7, 1fr)',marginBottom:4}}>
                           {DAY_ABBR.map(d=>(
-                            <div key={d} style={{textAlign:'center',fontSize:11,fontWeight:600,color:'#9ca3af',padding:'6px 0'}}>{d}</div>
+                            <div key={d} style={{textAlign:'center',fontSize:11,fontWeight:600,color:'#9ca3af',padding:'4px 0'}}>{d}</div>
                           ))}
                         </div>
                         <div style={{display:'grid',gridTemplateColumns:'repeat(7, 1fr)'}}>
                           {cells.map((day,i)=>{
-                            if(!day) return <div key={`e${i}`} style={{height:40}}/>;
+                            if(!day) return <div key={`e${i}`} style={{height:36}}/>;
                             const past = isBeforeToday(day);
                             const today = isSameDay(day, todayDate);
                             const isStart = rangeStart && isSameDay(day, rangeStart);
@@ -388,17 +388,17 @@ export default function App() {
                             const bandRight = isEnd;
                             return (
                               <div key={i}
-                                onClick={()=>handleDateClick(day)}
+                                onClick={(e)=>{e.stopPropagation();handleDateClick(day);}}
                                 onMouseEnter={()=>{ if(!past && rangeStart && !rangeEnd) setHoverDate(day); }}
                                 onMouseLeave={()=>{ if(hoverDate && isSameDay(hoverDate,day)) setHoverDate(null); }}
                                 style={{
-                                  position:'relative', height:40, display:'flex', alignItems:'center', justifyContent:'center',
+                                  position:'relative', height:36, display:'flex', alignItems:'center', justifyContent:'center',
                                   cursor: past ? 'default' : 'pointer',
                                   backgroundColor: showBand ? (inPrv && !inRng ? `${theme.accent}10` : `${theme.accent}18`) : (bandLeft||bandRight) ? `${theme.accent}18` : 'transparent',
                                   borderRadius: bandLeft ? '50% 0 0 50%' : bandRight ? '0 50% 50% 0' : 0,
                                 }}>
                                 <div style={{
-                                  width:36, height:36, display:'flex', alignItems:'center', justifyContent:'center',
+                                  width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center',
                                   borderRadius:'50%',
                                   backgroundColor: isEndpoint ? theme.accent : 'transparent',
                                   border: today && !isEndpoint ? `2px solid ${theme.accent}` : 'none',
@@ -419,11 +419,11 @@ export default function App() {
                   })}
                 </div>
                 {rangeStart && (
-                  <div style={{marginTop:18,paddingTop:16,borderTop:'1px solid #f0f0ec',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <div style={{marginTop:14,paddingTop:12,borderTop:'1px solid #f0f0ec',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                     <span style={{fontSize:13,color:'#6b7280'}}>
                       {rangeEnd ? `${fmtShort(rangeStart)} – ${fmtShort(rangeEnd)}` : 'Select an end date'}
                     </span>
-                    <button onClick={()=>setActivePanel(null)} style={{padding:'8px 20px',borderRadius:10,border:'none',background:theme.hero,color:'#fff',cursor:'pointer',fontSize:13,fontWeight:700,fontFamily:sans,boxShadow:'0 2px 8px rgba(0,0,0,0.15)'}}>
+                    <button onClick={(e)=>{e.stopPropagation();setActivePanel(null);}} style={{padding:'8px 20px',borderRadius:10,border:'none',background:theme.hero,color:'#fff',cursor:'pointer',fontSize:13,fontWeight:700,fontFamily:sans,boxShadow:'0 2px 8px rgba(0,0,0,0.15)'}}>
                       Done
                     </button>
                   </div>

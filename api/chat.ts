@@ -61,7 +61,7 @@ export default async function handler(req: Request): Promise<Response> {
         'X-Title': 'HuntFish Trip Planner',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.0-flash-001',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           ...messages,
