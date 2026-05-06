@@ -11,7 +11,7 @@ import ChatDrawer, { ChatTrigger } from './ChatDrawer';
 const serif = "'Playfair Display', Georgia, serif";
 const sans = "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif";
 
-function MiniCalendar({ guide, month, year, theme, compact }: { guide: Guide; month: number; year: number; theme: Theme; compact?: boolean }) {
+function MiniCalendar({ guide, month, year, theme, compact, selectedDate, onSelectDate }: { guide: Guide; month: number; year: number; theme: Theme; compact?: boolean; selectedDate?: string | null; onSelectDate?: (d: string) => void }) {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   const startPad = firstDay.getDay();
@@ -38,24 +38,28 @@ function MiniCalendar({ guide, month, year, theme, compact }: { guide: Guide; mo
         {['S','M','T','W','T','F','S'].map((d, i) => (
           <div key={i} style={{ width: sz, height: compact ? 12 : 14, fontSize: compact ? 7 : 9, color: '#9ca3af', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{d}</div>
         ))}
-        {cells.map((d, i) => (
+        {cells.map((d, i) => {
+          const isSel = d?.avail && selectedDate === d.dateStr;
+          return (
           <div
             key={i}
             title={d?.avail ? getConditionsForDate(guide, d.dateStr)?.conditions || '' : ''}
+            onClick={() => { if (d?.avail && onSelectDate) onSelectDate(d.dateStr); }}
             style={{
               width: sz, height: sz, borderRadius: compact ? 3 : 4,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: font, fontWeight: d?.avail ? 700 : 400,
-              backgroundColor: d?.avail ? theme.accent + '20' : 'transparent',
-              color: d?.avail ? theme.accentDark : d ? '#c1c1b8' : 'transparent',
-              border: d?.avail ? `1.5px solid ${theme.accent}55` : '1px solid transparent',
+              backgroundColor: isSel ? theme.accent : d?.avail ? theme.accent + '20' : 'transparent',
+              color: isSel ? '#fff' : d?.avail ? theme.accentDark : d ? '#c1c1b8' : 'transparent',
+              border: isSel ? `1.5px solid ${theme.accent}` : d?.avail ? `1.5px solid ${theme.accent}55` : '1px solid transparent',
               cursor: d?.avail ? 'pointer' : 'default',
               transition: 'background-color 0.15s ease',
             }}
           >
             {d?.day || ''}
           </div>
-        ))}
+          );
+        })}
       </div>
       {!compact && <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 6, textAlign: 'center' }}>{available.size} days available</div>}
     </div>
@@ -138,10 +142,13 @@ export default function App() {
   const [speciesSearch, setSpeciesSearch] = useState('');
   const [chatOpen, setChatOpen] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(4); // May = 4 (0-indexed)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   useEffect(() => { setTimeout(() => setLoaded(true), 100); }, []);
   useEffect(() => {
     document.body.style.overflow = selectedGuide ? 'hidden' : '';
+    setSelectedDate(null);
+    setBookingMsg(false);
     return () => { document.body.style.overflow = ''; };
   }, [selectedGuide]);
 
@@ -613,14 +620,14 @@ export default function App() {
                   </div>
                 </div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,backgroundColor:'#f9fafb',borderRadius:12,padding:12}}>
-                  <MiniCalendar guide={selectedGuide} month={calendarMonth} year={2026} theme={theme} />
-                  <MiniCalendar guide={selectedGuide} month={(calendarMonth + 1) % 12} year={calendarMonth + 1 > 11 ? 2027 : 2026} theme={theme} />
-                  <MiniCalendar guide={selectedGuide} month={(calendarMonth + 2) % 12} year={calendarMonth + 2 > 11 ? 2027 : 2026} theme={theme} />
+                  <MiniCalendar guide={selectedGuide} month={calendarMonth} year={2026} theme={theme} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+                  <MiniCalendar guide={selectedGuide} month={(calendarMonth + 1) % 12} year={calendarMonth + 1 > 11 ? 2027 : 2026} theme={theme} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+                  <MiniCalendar guide={selectedGuide} month={(calendarMonth + 2) % 12} year={calendarMonth + 2 > 11 ? 2027 : 2026} theme={theme} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:12,marginTop:8,fontSize:10,color:'#9ca3af'}}>
                   <span style={{display:'flex',alignItems:'center',gap:4}}><span style={{width:10,height:10,borderRadius:2,backgroundColor:theme.accent+'20',border:`1.5px solid ${theme.accent}55`}}/> Available</span>
                   <span style={{display:'flex',alignItems:'center',gap:4}}><span style={{width:10,height:10,borderRadius:2,backgroundColor:'transparent',border:'1px solid #e5e7eb'}}/> Booked</span>
-                  <span style={{marginLeft:'auto',fontStyle:'italic'}}>Hover dates for conditions</span>
+                  <span style={{marginLeft:'auto',fontStyle:'italic'}}>Click a date to select</span>
                 </div>
 
                 {/* Upcoming windows list */}
@@ -665,11 +672,13 @@ export default function App() {
                     <Check size={22} color="#fff"/>
                   </div>
                   <h3 style={{fontFamily:serif,fontSize:18,fontWeight:700,margin:'0 0 4px',color:'#166534'}}>Booking Request Sent!</h3>
-                  <p style={{fontSize:12,color:'#4b5563',margin:0}}>{selectedGuide.name} will confirm within 24 hours.</p>
+                  <p style={{fontSize:12,color:'#4b5563',margin:0}}>{selectedGuide.name} will confirm within 24 hours for {(() => { const d = new Date(selectedDate + 'T00:00:00'); const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return `${m[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`; })()}.</p>
                 </div>
               ) : (
-                <button onClick={()=>setBookingMsg(true)} style={{width:'100%',padding:'15px 20px',borderRadius:14,border:'none',background:theme.hero,color:'#fff',cursor:'pointer',fontSize:15,fontWeight:700,fontFamily:sans,letterSpacing:'0.3px',boxShadow:'0 4px 16px rgba(0,0,0,0.2)',transition:'all 0.5s ease'}}>
-                  Request Booking — {selectedGuide.price}
+                <button
+                  onClick={()=>{ if (selectedDate) setBookingMsg(true); }}
+                  style={{width:'100%',padding:'15px 20px',borderRadius:14,border:'none',background: selectedDate ? theme.hero : '#d1d5db',color:'#fff',cursor: selectedDate ? 'pointer' : 'not-allowed',fontSize:15,fontWeight:700,fontFamily:sans,letterSpacing:'0.3px',boxShadow: selectedDate ? '0 4px 16px rgba(0,0,0,0.2)' : 'none',transition:'all 0.5s ease',opacity: selectedDate ? 1 : 0.7}}>
+                  {selectedDate ? (() => { const d = new Date(selectedDate + 'T00:00:00'); const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return `Request Booking · ${m[d.getMonth()]} ${d.getDate()} — ${selectedGuide.price}`; })() : 'Select a date above to book'}
                 </button>
               )}
             </div>
