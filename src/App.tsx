@@ -396,6 +396,10 @@ export default function App() {
                       </div>
                       <CredentialBadges guide={g} theme={theme} compact />
                       <AvailabilityPreview guide={g} theme={theme} />
+                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,margin:'8px 0 4px',backgroundColor:'#f9fafb',borderRadius:8,padding:8}}>
+                        <MiniCalendar guide={g} month={4} year={2026} theme={theme} compact />
+                        <MiniCalendar guide={g} month={5} year={2026} theme={theme} compact />
+                      </div>
                       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:6}}>
                         <span style={{fontSize:15,fontWeight:700,color:theme.accent,transition:'color 0.5s ease'}}>{g.price}</span>
                         <span style={{fontSize:12,color:theme.accent,fontWeight:600,display:'flex',alignItems:'center',gap:4,transition:'color 0.5s ease'}}>View Profile <ChevronRight size={14}/></span>
